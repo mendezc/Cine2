@@ -10,29 +10,9 @@ namespace Cine.Repository
 {
     public class VentaRepository : IVentaRepository
     {
-        private List<Venta> listado;
-        private long ultimoId;
-        private List<Venta> listaDevuelo;
-        private Sesion[] Sesiones = new Sesion[9];
-       
-
         public VentaRepository()
         {
             Trace.WriteLine("Instanciado VentaRepository");
-            listado = new List<Venta>();
-            listaDevuelo = new List<Venta>();
-            ultimoId = 0;
-            
-            Sesiones[0] = new Sesion(1,1,17.5, false);
-            Sesiones[1] = new Sesion(2,2,17);
-            Sesiones[2] = new Sesion(3,3,17);
-            Sesiones[3] = new Sesion(4,1,19.5);
-            Sesiones[4] = new Sesion(5,2,19);
-            Sesiones[5] = new Sesion(6,3,19.5);
-            Sesiones[6] = new Sesion(7,1,22);
-            Sesiones[7] = new Sesion(8,2,22);
-            Sesiones[8] = new Sesion(9,3,22.5);
-            
         }
 
         public Venta Create(Venta venta)
@@ -54,7 +34,7 @@ namespace Cine.Repository
         {
             using (var context = new SalasDB())
             {
-                Venta res = context.Ventas.Find(id);
+                Venta res = context.Ventas.Include("Sesion").Where(v => v.VentaId == id).FirstOrDefault();
                 Trace.WriteLine("Leyendo venta de id" + id);
                 return res;
             }
@@ -80,30 +60,44 @@ namespace Cine.Repository
 
         public Venta Update(Venta venta)
         {
-            int indice = listado.FindIndex(v => v.VentaId == venta.VentaId);
-            listado[indice] = venta;
-            Trace.WriteLine("Actualizando venta de id " + venta.VentaId);
-            return listado[indice];
+            Sesion sesion = null;
+            using (var ctx = new SalasDB())
+            {
+                sesion = ctx.Sesiones.Find(venta.Sesion.SesionId);
+                Venta antigua = ctx.Ventas.Find(venta.VentaId);
+                if (antigua != null)
+                {
+                    venta.Sesion = sesion;
+                    ctx.Entry(antigua).CurrentValues.SetValues(venta);
+                    Trace.WriteLine("Actualizando venta de id " + venta.VentaId);
+                }
+                else
+                {
+                    throw new VentaException("La venta que intentó actualizar no existe.");
+                }
+                return antigua ;
+            }
         }
 
         public Venta Delete(long id)
         {
-            int indice = listado.FindIndex(v => v.VentaId == id);
-            Venta venta = listado[indice];
-            Sesion sesion = venta.Sesion;
+            //int indice = listado.FindIndex(v => v.VentaId == id);
+            //Venta venta = listado[indice];
+            //Sesion sesion = venta.Sesion;
 
-            if (!sesion.Cerrado)
-            {
-                listaDevuelo.Add(listado[indice]);
-                listado.RemoveAt(indice);
-                Trace.WriteLine("Eliminada venta de id " + id);
-                return listaDevuelo.Last();
-            }
-            else
-            {
-                Trace.WriteLine("No se ha podido realizar la devolucion, la sesion esta cerrada");
-                throw new Exception("No se pudo eliminar, Sesion cerrada");
-            }
+            //if (!sesion.Cerrado)
+            //{
+            //    listaDevuelo.Add(listado[indice]);
+            //    listado.RemoveAt(indice);
+            //    Trace.WriteLine("Eliminada venta de id " + id);
+            //    return listaDevuelo.Last();
+            //}
+            //else
+            //{
+            //    Trace.WriteLine("No se ha podido realizar la devolucion, la sesion esta cerrada");
+            //    throw new Exception("No se pudo eliminar, Sesion cerrada");
+            //}
+            return null;
         }
 
         public int ButacasVendidas(long idSesion){
@@ -118,25 +112,27 @@ namespace Cine.Repository
 
         public IList<Venta> EntradasVendidasSala(int idSala)
         {
-            List<Venta> selecteds = listado.FindAll(
-                    venta => venta.Sesion.SalaId == idSala
-                    );
-            Trace.WriteLine("Calculada total de entradas por sala ");
-            return selecteds;
+            //List<Venta> selecteds = listado.FindAll(
+            //        venta => venta.Sesion.SalaId == idSala
+            //        );
+            //Trace.WriteLine("Calculada total de entradas por sala ");
+            //return selecteds;
+            return null;
         }
 
         public int EntradasVendidasTotalSala(int idSala)
         {
-            List<Venta> selecteds = listado.FindAll(
-                     venta => venta.Sesion.SalaId == idSala
-                     );
-            int sum = selecteds.Sum(venta => venta.numEntradas);
-            Trace.WriteLine("Calculada total de entradas vendidas porsala ");
-            return sum;
+            //List<Venta> selecteds = listado.FindAll(
+            //         venta => venta.Sesion.SalaId == idSala
+            //         );
+            //int sum = selecteds.Sum(venta => venta.numEntradas);
+            //Trace.WriteLine("Calculada total de entradas vendidas porsala ");
+            //return sum;
+            return 0;
         }
 
         /// <summary>
-        /// metodo que comrpueba que la sesion existe y que no esta cerrada
+        /// Metodo que comrpueba que la sesion existe y que no esta cerrada
         /// </summary>
         /// <param name="sesionId"></param>
         /// <returns></returns>
@@ -156,44 +152,35 @@ namespace Cine.Repository
 
         public Sesion BuscaSesion(int sesionID)
         {
-            foreach (Sesion s in Sesiones)
-            {
-                if (s.SesionId == sesionID)
-                {
-                    return s;
-                }
-            }
+            //foreach (Sesion s in Sesiones)
+            //{
+            //    if (s.SesionId == sesionID)
+            //    {
+            //        return s;
+            //    }
+            //}
             return null;
-        }
-
-        public void CambiarCerradoSesion(int idSesion) //metodo para abrir y cerrar sesiones
-        {
-            foreach (Sesion ses in Sesiones)
-            {
-                if (ses.SesionId == idSesion)
-                {
-                    ses.Cerrado = !ses.Cerrado;
-                }
-            }
         }
 
         public IList<Venta> EntradasVendidasSesion(int idSesion)
         {
-            List<Venta> selecteds = listado.FindAll(
-                    venta => venta.Sesion.SesionId == idSesion
-                    );
-            Trace.WriteLine("Calculada total de entradas por sesion ");
-            return selecteds;
+            //List<Venta> selecteds = listado.FindAll(
+            //        venta => venta.Sesion.SesionId == idSesion
+            //        );
+            //Trace.WriteLine("Calculada total de entradas por sesion ");
+            //return selecteds;
+            return null;
         }
 
         public int EntradasVendidasTotalSesion(int idSesion)
         {
-            List<Venta> selecteds = listado.FindAll(
-                     venta => venta.Sesion.SesionId == idSesion
-                     );
-            int sum = selecteds.Sum(venta => venta.numEntradas);
-            Trace.WriteLine("Calculada total de entradas vendidas por sesion ");
-            return sum;
+            //List<Venta> selecteds = listado.FindAll(
+            //         venta => venta.Sesion.SesionId == idSesion
+            //         );
+            //int sum = selecteds.Sum(venta => venta.numEntradas);
+            //Trace.WriteLine("Calculada total de entradas vendidas por sesion ");
+            //return sum;
+            return 0;
         }
 
       

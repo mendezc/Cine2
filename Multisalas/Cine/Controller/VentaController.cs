@@ -19,7 +19,7 @@ namespace Cine.Controller
             Servicio = ventaService;
         }
 
-        public double Create(Venta venta)
+        public Venta Create(Venta venta)
         {
             return Servicio.Create(venta);
         }
@@ -39,7 +39,7 @@ namespace Cine.Controller
             return Servicio.Update(venta);
         }
 
-        public double Delete(long id)
+        public Venta Delete(long id)
         {
            return Servicio.Delete(id);
         }
@@ -60,11 +60,6 @@ namespace Cine.Controller
         public double TotalDineroSesion(int idSesion)
         {
             return Servicio.TotalDineroSesion(idSesion);
-        }
-
-        public void CambiarCerradoSesion(int idSesion)
-        {
-            Servicio.CambiarCerradoSesion(idSesion);
         }
 
         public bool SesionValida(Sesion ses)

@@ -33,19 +33,19 @@ namespace Cine.Service
         }
 
 
-        public double Create(Venta venta)
+        public Venta Create(Venta venta)
         {
             if (Repositorio.SesionValida(venta.Sesion.SesionId) && QuedanEntradas(venta.Sesion.SesionId, venta.numEntradas))
             {
                 double precio = PrecioEntradas(venta.numEntradas);
                 venta.Precio = precio;
                 Repositorio.Create(venta);
-                return precio;
+                return venta;
             }
             else
             {
                 Trace.WriteLine("Imposible vender entradas, no quedan entradas o la sesion no existe o esta cerrada");
-                throw new Exception("No quedan entradas en la sala o la sesion no existe o esta cerrada");
+                throw new VentaException("No quedan entradas en la sala o la sesion no existe o esta cerrada");
             }
         }
 
@@ -61,15 +61,40 @@ namespace Cine.Service
 
         public Venta Update(Venta venta)
         {
+            if (!Repositorio.SesionValida(venta.Sesion.SesionId))
+            {
+                throw new VentaException("La sesión de la venta que intentó actualizar no existe o está cerrada.");
+            }
+            Venta antigua = Repositorio.Read(venta.VentaId);
+            bool haySuficientesEntradas = false;
+            if (antigua == null)
+            {
+                throw new VentaException("La venta que intentó actualizar no existe.");
+            }
+            if (antigua.Sesion.SesionId == venta.Sesion.SesionId)
+            {
+                haySuficientesEntradas = QuedanEntradas(venta.Sesion.SesionId, venta.numEntradas, antigua.numEntradas);
+            }
+            else
+            {
+                haySuficientesEntradas = QuedanEntradas(venta.Sesion.SesionId, venta.numEntradas);
+            }
+            if (!haySuficientesEntradas)
+            {
+                Trace.WriteLine("Imposible cambiar entradas, no hay suficiente aforo para la sesión seleccionada.");
+                throw new VentaException("No hay suficiente aforo para realizar el cambio en la venta");
+            }
+            venta.Precio = PrecioEntradas(venta.numEntradas);
+            Trace.WriteLine("El dinero correspondiente a la venta es: " + venta.Precio);
             return Repositorio.Update(venta);
         }
 
-        public double Delete(long id)
+        public Venta Delete(long id)
         {
             var venta = Repositorio.Delete(id);
             double precio = PrecioEntradas(venta.numEntradas);
             Trace.WriteLine("El dinero correspondiente a la venta es: " + precio);
-            return precio;
+            return venta;
         }
 
         public double Calcular()
@@ -77,12 +102,13 @@ namespace Cine.Service
             return Repositorio.List().Sum(v => PrecioEntradas(v.numEntradas));
         }
 
-        public bool QuedanEntradas(int sesionId, int numEntradas)
+        public bool QuedanEntradas(int sesionId, int numEntradas, int antiguasEntradas = 0)
         {
             Sesion sesion = SesionRepositorio.Read(sesionId);
-            int numeroEntradasConLasSolicitadas = Repositorio.ButacasVendidas(sesionId) + numEntradas;
+            int numeroEntradasConLasSolicitadas = Repositorio.ButacasVendidas(sesionId) - antiguasEntradas;
+            numeroEntradasConLasSolicitadas += numEntradas;
             bool resultado = numeroEntradasConLasSolicitadas <= NumeroEntradas(sesion.SalaId);
-            return resultado; 
+            return resultado;
         }
 
         private int NumeroEntradas(int salaId)
@@ -126,11 +152,6 @@ namespace Cine.Service
         public int EntradasVendidasTotalSesion(int idSesion)
         {
             return Repositorio.EntradasVendidasTotalSesion(idSesion);
-        }
-
-        public void CambiarCerradoSesion(int idSesion)
-        {
-            Repositorio.CambiarCerradoSesion(idSesion);
         }
 
         public bool SesionValida(Sesion ses)

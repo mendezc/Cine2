@@ -8,20 +8,19 @@ namespace Cine
 {
     public interface IVentaService
     {
-        double Create(Venta venta);
+        Venta Create(Venta venta);
         Venta Read(long id);
         IList<Venta> List();
         Venta Update(Venta venta);
-        double Delete(long id);
+        Venta Delete(long id);
         double Calcular();
-        bool QuedanEntradas(int sesionId, int numEntradas);
+        bool QuedanEntradas(int sesionId, int numEntradas, int antiguasEntradas);
         double PrecioEntradas(int numeroEntradas);
         int TotalEntradas(Venta venta);
         double TotalDineroSala(int idSala);
         double TotalDineroSesion(int idSesion);
         int EntradasVendidasTotalSala(int idSala);
         int EntradasVendidasTotalSesion(int idSesion);
-        void CambiarCerradoSesion(int idSesion);
         bool SesionValida(Sesion ses);
         Sesion BuscaSesion(int sesionID);
     }

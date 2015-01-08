@@ -8,18 +8,16 @@ namespace Cine
 {
     public interface IVentaController
     {
-        double Create(Venta venta);
+        Venta Create(Venta venta);
         Venta Read(long id);
         IList<Venta> List();
         Venta Update(Venta venta);
-        double Delete(long id);
+        Venta Delete(long id);
         double Calcular();
         int TotalEntradas(Venta venta);
         double TotalDineroSala(int idSala);
 
         double TotalDineroSesion(int idSesion);
-
-        void CambiarCerradoSesion(int idSesion);
 
         bool SesionValida(Sesion ses);
 

@@ -18,8 +18,6 @@ namespace Cine
         int EntradasVendidasTotalSala(int idSala);
         IList<Venta> EntradasVendidasSesion(int idSesion);
         int EntradasVendidasTotalSesion(int idSesion);
-
-        void CambiarCerradoSesion(int idSesion);
         bool SesionValida(int sesionId);
         Sesion BuscaSesion(int sesionID);
     }

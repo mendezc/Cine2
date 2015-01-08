@@ -16,7 +16,7 @@ namespace CineTest
         public void TestInitialize(){
             _repositorio = new VentaRepository();
             _sesion = new Sesion(1, 1, 19);
-            _repositorio.CambiarCerradoSesion(_sesion.SesionId);
+          //  _repositorio.CambiarCerradoSesion(_sesion.SesionId);
             _sesion = _repositorio.BuscaSesion(1);
         }
 
@@ -26,12 +26,12 @@ namespace CineTest
             _venta = new Venta(_sesion, 100);
             _repositorio.Create(_venta);
             Sesion sesion2 = new Sesion(2, 2, 19);
-            _repositorio.CambiarCerradoSesion(sesion2.SesionId);
+           // _repositorio.CambiarCerradoSesion(sesion2.SesionId);
             _venta = new Venta(sesion2, 10);
             _repositorio.Create(_venta);
 
             Sesion sesion3 = new Sesion(3, 3, 19);
-            _repositorio.CambiarCerradoSesion(sesion3.SesionId);
+           // _repositorio.CambiarCerradoSesion(sesion3.SesionId);
             _venta = new Venta(sesion3, 10);
             _repositorio.Create(_venta);
             Assert.AreEqual(3, _repositorio.List().Count);
@@ -53,7 +53,7 @@ namespace CineTest
             _venta = new Venta(_sesion, 50);
             _repositorio.Create(_venta);
             Sesion sesion2 = new Sesion(2, 2, 19);
-            _repositorio.CambiarCerradoSesion(sesion2.SesionId);
+           // _repositorio.CambiarCerradoSesion(sesion2.SesionId);
             _venta = new Venta(sesion2, 40);
             _repositorio.Create(_venta);
             _repositorio.Delete(1);
