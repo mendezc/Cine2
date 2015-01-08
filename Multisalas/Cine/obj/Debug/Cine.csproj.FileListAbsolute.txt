@@ -1,0 +1,16 @@
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Cine.dll.config
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Cine.dll
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Cine.pdb
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\EntityFramework.dll
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\EntityFramework.SqlServer.dll
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Microsoft.Practices.Unity.Configuration.dll
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Microsoft.Practices.Unity.dll
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Microsoft.Practices.Unity.RegistrationByConvention.dll
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\EntityFramework.xml
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\EntityFramework.SqlServer.xml
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Microsoft.Practices.Unity.xml
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Microsoft.Practices.Unity.Configuration.xml
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\bin\Debug\Microsoft.Practices.Unity.RegistrationByConvention.xml
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\obj\Debug\Cine.csprojResolveAssemblyReference.cache
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\obj\Debug\Cine.dll
+D:\Repo\equipo\equipo02\curso12b\trunk\Multisalas\Cine\obj\Debug\Cine.pdb
