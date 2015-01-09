@@ -13,9 +13,6 @@ namespace CineTest
     [TestClass]
     public class IntegracionTest
     {
-        //private SalasDB context;
-        //private DbContextTransaction transaction;
-
         private Venta _venta;
         private Venta _ventaDos;
         private Sesion _sesion;
