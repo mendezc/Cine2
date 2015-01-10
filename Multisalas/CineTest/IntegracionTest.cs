@@ -13,22 +13,15 @@ namespace CineTest
     [TestClass]
     public class IntegracionTest
     {
-        //private SalasDB context;
-        //private DbContextTransaction transaction;
-
         private Venta _venta;
-        private Venta _ventaDos;
         private Sesion _sesion;
         private IVentaController _controlador;
         private ISesionController _controladorSesion;
-
         private IUnityContainer container;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            //context = new SalasDB();
-            //transaction = context.Database.BeginTransaction();
 
             container = new UnityContainer();
 
@@ -45,32 +38,32 @@ namespace CineTest
             _controladorSesion = container.Resolve<ISesionController>();
         }
 
-        //[TestCleanup]
-        //public void TestCleanUp()
-        //{
-        //    transaction.Rollback();
-        //    transaction.Dispose();
-        //    context.Dispose();
-        //}
-        [TestMethod]
-        public void AbrirSesiontest()
+        [TestCleanup]
+        public void CleanUp()
         {
-            Sesion sesion1 = new Sesion(1, 1, 17.5);
-            Assert.AreEqual(sesion1.Cerrado, true);
-            sesion1 = _controladorSesion.Abrir(sesion1.SesionId);
-            Assert.AreEqual(sesion1.Cerrado, false);
+            using (var ctx = new SalasDB())
+            {
+                ctx.Database.SqlQuery<Venta>("DELETE FROM Ventas");
+                ctx.SaveChanges();
+            }
         }
 
         [TestMethod]
         public void AbriryCerrarSesiontest()
         {
-            Sesion sesion1 = new Sesion(1, 1, 17.5);
-            sesion1 = _controladorSesion.Abrir(sesion1.SesionId);
-            Assert.AreEqual(sesion1.Cerrado, false);
+            const long TESTSESSION = 1;
+            bool abierta = _controladorSesion.EstaAbierta(TESTSESSION);
+            Assert.IsFalse(abierta); // cerrada por defecto.
 
-            sesion1 = _controladorSesion.Cerrar(sesion1.SesionId);
-            Assert.AreEqual(sesion1.Cerrado, true);
+            _controladorSesion.Abrir(TESTSESSION);
+            abierta = _controladorSesion.EstaAbierta(TESTSESSION);
+            Assert.IsTrue(abierta);
+
+            _controladorSesion.Cerrar(TESTSESSION);
+            abierta = _controladorSesion.EstaAbierta(TESTSESSION);
+            Assert.IsFalse(abierta);
         }
+
         [TestMethod]
         public void TestCreateVenta()
         {
@@ -79,17 +72,17 @@ namespace CineTest
             _controladorSesion.Abrir(1);
 
             _venta = _controlador.Create(_venta);
-            Assert.AreEqual(315.0d, _venta.Precio, 0.0001d);
+            Assert.AreEqual(315.0d, _venta.Total, 0.0001d);
 
             _sesion = new Sesion(1, 1, 17.5);
             _venta = new Venta(_sesion, 49);
             _venta = _controlador.Create(_venta);
-            Assert.AreEqual(308.70d, _venta.Precio, 0.0001d);
-
+            Assert.AreEqual(308.70d, _venta.Total, 0.0001d);
         }
+
         [TestMethod]
         [ExpectedException(typeof(VentaException))]
-        public void TestNoPuedoCreateSiNoAforoSuficiente()
+        public void TestCreateNoPuedoSiNoAforoSuficiente()
         {
             _sesion = new Sesion(4, 1, 17.5);
             _venta = new Venta(_sesion, 100);
@@ -100,8 +93,8 @@ namespace CineTest
             _controlador.Create(_venta);
         }
         [TestMethod]
-        [ExpectedException(typeof(VentaException))]
-        public void TestNoPuedoCreateSiSesionCerrada()
+        [ExpectedException(typeof(SesionException))]
+        public void TestCreateNoPuedoSiSesionCerrada()
         {
             _sesion = new Sesion(2, 1, 17.5);
             _venta = new Venta(_sesion, 1);
@@ -118,13 +111,15 @@ namespace CineTest
             Sesion sesion2 = new Sesion(7, 1, 17.5);
             _venta = new Venta(sesion2, 20);
             _venta.VentaId = dbVenta.VentaId;
-            _controlador.Update(_venta);
+            _venta = _controlador.Update(_venta);
             Assert.AreNotEqual(_venta, dbVenta);
             Assert.AreEqual(_venta.VentaId, dbVenta.VentaId);
+            Assert.AreEqual(63.0d, _venta.Diferencia);
         }
+
         [TestMethod]
         [ExpectedException(typeof(VentaException))]
-        public void TestNoPuedoUpdateSiVentaNoExiste()
+        public void TestUpdateNoPuedoSiVentaNoExiste()
         {
             _sesion = new Sesion(4, 1, 17.5);
             _venta = new Venta(_sesion, 50);
@@ -134,158 +129,61 @@ namespace CineTest
             dbVenta.VentaId = 9999;
             _controlador.Update(dbVenta);
         }
+
         [TestMethod]
-        [ExpectedException(typeof(VentaException))]
-        public void TestNoPuedoUpdateSiSesionCerrada()
+        [ExpectedException(typeof(SesionException))]
+        public void TestUpdateNoPuedoSiSesionCerrada()
         {
-            _sesion = new Sesion(4, 1, 17.5);
+            _sesion = new Sesion(6, 1, 17.5);
             _venta = new Venta(_sesion, 10);
             _controlador.Create(_venta);
-         //   _controlador.CambiarCerradoSesion(_sesion.SesionId);
+            _controladorSesion.Cerrar(6);
             _venta.numEntradas = 20;
             _controlador.Update(_venta);
         }
+
         [TestMethod]
         [ExpectedException(typeof(VentaException))]
-        public void TestNoPuedoUpdateSiNoHaySuficienteAforo()
+        public void TestUpdateNoPuedoSiNoHaySuficienteAforo()
         {
-            _sesion = new Sesion(3, 1, 22);
+            _sesion = new Sesion(6, 1, 22);
+            _controladorSesion.Abrir(6);
             _venta = new Venta(_sesion, 20);
-            _controlador.Create(_venta);
-            _venta.numEntradas = 21;
+            Venta venta = _controlador.Create(_venta);
+            venta.numEntradas = 21;
             _controlador.Update(_venta);
         }
-        [Ignore]
-        [TestMethod]
-        public void TestCreateList()
-        {
-            _venta = new Venta(_sesion, 80);
-            _controlador.Create(_venta);
-            _venta = new Venta(_sesion, 10);
-            _controlador.Create(_venta);
 
-            Sesion sesion2 = new Sesion(2, 2, 19);
-          //  _controlador.CambiarCerradoSesion(sesion2.SesionId);
-
-            _ventaDos = new Venta(sesion2, 10);
-            _controlador.Create(_ventaDos);
-            Assert.AreEqual(3, _controlador.List().Count);
-        }
-        [Ignore]
-        [TestMethod]
-        public void TestCalcular()
-        {
-            _venta = new Venta(_sesion, 80);
-            _controlador.Create(_venta);
-            Sesion sesion2 = new Sesion(2, 2, 19);
-         //   _controlador.CambiarCerradoSesion(sesion2.SesionId);
-            _venta = new Venta(sesion2, 10);
-            _controlador.Create(_venta);
-
-            Assert.AreEqual( 567 , _controlador.Calcular() );
-
-        }
-        [Ignore]
-        [TestMethod]
-        public void TestReadCreate()
-        {
-            _venta = new Venta(_sesion, 10);
-            _controlador.Create(_venta);
-            Assert.AreEqual(1, _controlador.Read(1).VentaId);
-            Assert.AreEqual(1, _controlador.Read(1).Sesion.SesionId);
-            Assert.AreEqual(10, _controlador.Read(1).numEntradas);
-        }
-        [Ignore]
         [TestMethod]
         public void TestDelete()
         {
-            _venta = new Venta(_sesion, 50);
-            _controlador.Create(_venta);
-            Sesion sesion2 = new Sesion(2, 2, 17);
-           // _controlador.CambiarCerradoSesion(sesion2.SesionId);
-            _venta = new Venta(sesion2, 40);
+            Sesion sesion1 = new Sesion(8, 1, 17.5);
+            _controladorSesion.Abrir(sesion1.SesionId);
+            _venta = new Venta(sesion1, 2);
             _controlador.Create(_venta);
 
-
-            Assert.AreEqual(315,_controlador.Delete(1));
-            Assert.AreEqual(1, _controlador.List().Count);
-            Assert.AreEqual(252, _controlador.Calcular());
+            _venta = _controlador.Delete(_venta.VentaId);
+            Assert.AreEqual(_venta.Devolucion, true);
         }
-        [Ignore]
+
         [TestMethod]
-        public void TestUpdate()
+        [ExpectedException(typeof(VentaException))]
+        public void TestDeleteNoPuedoSiVentaNoExiste()
         {
-            _venta = new Venta(_sesion, 50);
-            _controlador.Create(_venta);
-
-            _venta = new Venta(_sesion,0);
-            _venta.VentaId = 1;
-            _controlador.Update(_venta);
-            Assert.AreEqual(0, _controlador.Read(1).numEntradas);
-            Assert.AreEqual(0, _controlador.Calcular());
+            _controlador.Delete(9999);
         }
-        [Ignore]
+
         [TestMethod]
-        public void ComprobarLasEntradas()
+        [ExpectedException(typeof(SesionException))]
+        public void TestDeleteNoPuedoSiSesionCerrada()
         {
-            Cine.Venta entradaPrueba = new Cine.Venta(_sesion,50);                 
-            _controlador.Create(entradaPrueba);
-            _controlador.TotalEntradas(entradaPrueba);
-            Assert.AreEqual(50, _controlador.TotalEntradas(entradaPrueba));
-        }
-        [Ignore]
-        [TestMethod]
-        public void ComprobarLasEntradasSala()
-        {
-            Cine.Venta entradaPrueba = new Cine.Venta(_sesion,50);
-            _controlador.Create(entradaPrueba);
-            _controlador.TotalEntradas(entradaPrueba);
-            //_controlador.Servicio.EntradasVendidasTotalSala(entradaPrueba.Sesion.SalaId);
-            Assert.AreEqual(50, _controlador.TotalEntradas(entradaPrueba));
-            //Assert.AreEqual(50, _controlador.Servicio.EntradasVendidasTotalSala(entradaPrueba.Sesion.SalaId));
-        }
-        [Ignore]
-        [TestMethod]
-        public void ComprobarLasEntradasSesion()
-        {
-            Cine.Venta entradaPrueba = new Cine.Venta(_sesion, 50);
-            _controlador.Create(entradaPrueba);
-            _controlador.TotalEntradas(entradaPrueba);
-            //_controlador.Servicio.EntradasVendidasTotalSesion(entradaPrueba.Sesion.SesionId);
-            Assert.AreEqual(50, _controlador.TotalEntradas(entradaPrueba));
-            //Assert.AreEqual(50, _controlador.Servicio.EntradasVendidasTotalSesion(entradaPrueba.Sesion.SesionId));
-        }
-        [Ignore]
-        [TestMethod]
-        public void ComprobarDineroSala()
-        {
-            Cine.Venta entradaPrueba = new Cine.Venta(_sesion, 50);
-            _controlador.Create(entradaPrueba);            
-            _controlador.TotalDineroSala(1);
-
-            Assert.AreEqual(315, _controlador.TotalDineroSala(1));
+            _sesion = new Sesion(8, 1, 17.5);
+            _controladorSesion.Abrir(_sesion.SesionId);
+            Venta _venta = new Venta(_sesion, 2);
+            _venta = _controlador.Create(_venta);
+            _controladorSesion.Cerrar(_sesion.SesionId);
+            _controlador.Delete(_venta.VentaId);
         }
 
-        
-
-        [Ignore]
-        [TestMethod]
-        public void TestUpdateBySalaAndSesion()
-        {
-            _venta = new Venta(_sesion, 10);
-            _controlador.Create(_venta);
-
-            Sesion _sesion2 = new Sesion(2, 2, 17);
-           // _controlador.CambiarCerradoSesion(_sesion2.SesionId);
-            _sesion2 = _controlador.BuscaSesion(_sesion2.SesionId);
-
-            _venta = new Venta(_sesion2, 15);
-            _venta.VentaId = 1;
-            _venta = _controlador.Update(_venta);
-
-            Assert.AreEqual(15, _controlador.Read(1).numEntradas);
-            Assert.AreEqual(_sesion2, _venta.Sesion);
-            
-        }
-    }
+   }
 }

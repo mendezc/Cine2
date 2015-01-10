@@ -49,7 +49,7 @@ namespace Cine.Repository
             {
                 
                 Trace.WriteLine("Listando ventas");
-                return context.Ventas.ToList();
+                return context.Ventas.Where(v => v.Devolucion == false).ToList();
                 
                 //return context.Set<Venta>().ToList();
                 //return listado;
@@ -69,38 +69,34 @@ namespace Cine.Repository
                 {
                     venta.Sesion = sesion;
                     ctx.Entry(antigua).CurrentValues.SetValues(venta);
+                    ctx.SaveChanges();
                     Trace.WriteLine("Actualizando venta de id " + venta.VentaId);
                 }
                 else
                 {
                     throw new VentaException("La venta que intentó actualizar no existe.");
                 }
+                
                 return antigua ;
             }
         }
 
         public Venta Delete(long id)
         {
-            //int indice = listado.FindIndex(v => v.VentaId == id);
-            //Venta venta = listado[indice];
-            //Sesion sesion = venta.Sesion;
-
-            //if (!sesion.Cerrado)
-            //{
-            //    listaDevuelo.Add(listado[indice]);
-            //    listado.RemoveAt(indice);
-            //    Trace.WriteLine("Eliminada venta de id " + id);
-            //    return listaDevuelo.Last();
-            //}
-            //else
-            //{
-            //    Trace.WriteLine("No se ha podido realizar la devolucion, la sesion esta cerrada");
-            //    throw new Exception("No se pudo eliminar, Sesion cerrada");
-            //}
-            return null;
+            Venta borrado = null;
+            using (var context = new SalasDB())
+            { 
+                borrado = context.Ventas.Find(id);
+                if (borrado != null && borrado.Devolucion == false)
+                {
+                    borrado.Devolucion = true;
+                    context.SaveChanges();
+                }
+            }
+            return borrado;
         }
 
-        public int ButacasVendidas(long idSesion){
+        public int ButacasVendidasSesion(long idSesion){
             using(var context = new SalasDB())
             {
                 int resultado = context.Database
@@ -110,79 +106,66 @@ namespace Cine.Repository
             }
         }
 
-        public IList<Venta> EntradasVendidasSala(int idSala)
-        {
-            //List<Venta> selecteds = listado.FindAll(
-            //        venta => venta.Sesion.SalaId == idSala
-            //        );
-            //Trace.WriteLine("Calculada total de entradas por sala ");
-            //return selecteds;
-            return null;
-        }
+       
 
-        public int EntradasVendidasTotalSala(int idSala)
+        public int ButacasVendidasSala(int idSala)
         {
-            //List<Venta> selecteds = listado.FindAll(
-            //         venta => venta.Sesion.SalaId == idSala
-            //         );
-            //int sum = selecteds.Sum(venta => venta.numEntradas);
-            //Trace.WriteLine("Calculada total de entradas vendidas porsala ");
-            //return sum;
-            return 0;
-        }
-
-        /// <summary>
-        /// Metodo que comrpueba que la sesion existe y que no esta cerrada
-        /// </summary>
-        /// <param name="sesionId"></param>
-        /// <returns></returns>
-        public bool SesionValida(int sesionId)
-        {            
-            bool valida = false;
-            using(var context = new SalasDB())
+            int resultado = 0;
+            using (var context = new SalasDB())
             {
-                Sesion sesion = context.Sesiones.Find(sesionId);
-                if (sesion != null && !sesion.Cerrado)
-                {
-                    valida = true;
-                }
+                resultado = context.Database
+                    .SqlQuery<int>("select sum(Ventas.numEntradas) as total from Ventas, Sesions where Ventas.Sesion_SesionId=Sesions.SesionId and Sesions.SalaId = @p0 group by Sesions.SalaId ", new SqlParameter("p0", idSala))
+                    .FirstOrDefault();
             }
-            return valida;
+            return resultado;
         }
 
-        public Sesion BuscaSesion(int sesionID)
+        public int ButacasVendidas()
         {
-            //foreach (Sesion s in Sesiones)
-            //{
-            //    if (s.SesionId == sesionID)
-            //    {
-            //        return s;
-            //    }
-            //}
-            return null;
+            int resultado = 0;
+            using (var context = new SalasDB())
+            {
+                resultado = context.Database
+                    .SqlQuery<int>("select sum(Ventas.numEntradas) as total from Ventas")
+                    .FirstOrDefault();
+            }
+            return resultado;
         }
+        
 
-        public IList<Venta> EntradasVendidasSesion(int idSesion)
+        public double TotalPrecioSesion(long idSesion)
         {
-            //List<Venta> selecteds = listado.FindAll(
-            //        venta => venta.Sesion.SesionId == idSesion
-            //        );
-            //Trace.WriteLine("Calculada total de entradas por sesion ");
-            //return selecteds;
-            return null;
+            using (var context = new SalasDB())
+            {
+                int resultado = context.Database
+                    .SqlQuery<int>("select sum(Precio) as total from Ventas where Sesion_SesionId = @p0 group by Sesion_SesionId ", new SqlParameter("p0", idSesion))
+                    .FirstOrDefault();
+                return resultado;
+            }
         }
 
-        public int EntradasVendidasTotalSesion(int idSesion)
+        public double TotalPrecioSala(int idSala)
         {
-            //List<Venta> selecteds = listado.FindAll(
-            //         venta => venta.Sesion.SesionId == idSesion
-            //         );
-            //int sum = selecteds.Sum(venta => venta.numEntradas);
-            //Trace.WriteLine("Calculada total de entradas vendidas por sesion ");
-            //return sum;
-            return 0;
+            int resultado = 0;
+            using (var context = new SalasDB())
+            {
+                resultado = context.Database
+                    .SqlQuery<int>("select sum(Ventas.Precio) as total from Ventas, Sesions where Ventas.Sesion_SesionId=Sesions.SesionId and Sesions.SalaId = @p0 group by Sesions.SalaId ", new SqlParameter("p0", idSala))
+                    .FirstOrDefault();
+            }
+            return resultado;
         }
 
-      
+        public double TotalPrecio()
+        {
+            int resultado = 0;
+            using (var context = new SalasDB())
+            {
+                resultado = context.Database
+                    .SqlQuery<int>("select sum(Precio) as total from Ventas")
+                    .FirstOrDefault();
+            }
+            return resultado;
+        }
     }
 }

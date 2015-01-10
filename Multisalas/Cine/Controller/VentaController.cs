@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cine.Service;
 
 namespace Cine.Controller
 {
     public class VentaController : IVentaController
     {
-        public IVentaService Servicio
-        {
-            get;
-            set;
-        }
+        public IVentaService Servicio { get; set; }
 
         public VentaController(IVentaService ventaService)
         {
@@ -44,32 +41,34 @@ namespace Cine.Controller
            return Servicio.Delete(id);
         }
 
-        public double Calcular()
+        public int ButacasVendidasSesion(long idSesion)
         {
-            return Servicio.Calcular();
+            return Servicio.ButacasVendidasSesion(idSesion);
         }
 
-        public int TotalEntradas(Venta venta)
+        public int ButacasVendidasSala(int idSala)
         {
-            return Servicio.TotalEntradas(venta);
-        }
-        public double TotalDineroSala(int idSala)
-        {
-            return Servicio.TotalDineroSala(idSala);
-        }
-        public double TotalDineroSesion(int idSesion)
-        {
-            return Servicio.TotalDineroSesion(idSesion);
+            return Servicio.ButacasVendidasSala(idSala);
         }
 
-        public bool SesionValida(Sesion ses)
+        public int ButacasVendidas()
         {
-            return Servicio.SesionValida(ses);
+            return Servicio.ButacasVendidas();
         }
 
-        public Sesion BuscaSesion(int sesionID)
+        public double TotalPrecioSesion(long idSesion)
         {
-            return Servicio.BuscaSesion(sesionID);
+            return Servicio.TotalPrecioSesion(idSesion);
+        }
+
+        public double TotalPrecioSala(int idSala)
+        {
+            return Servicio.TotalPrecioSala(idSala);
+        }
+
+        public double TotalPrecio()
+        {
+            return Servicio.TotalPrecio();
         }
     }
 }

@@ -55,21 +55,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller\ISesionController.cs" />
+    <Compile Include="Constantes.cs" />
+    <Compile Include="Interfaces\ISesionController.cs" />
     <Compile Include="Controller\SesionController.cs" />
     <Compile Include="Controller\VentaController.cs" />
-    <Compile Include="Repository\ISesionRepository.cs" />
-    <Compile Include="Repository\IVentaRepository.cs" />
+    <Compile Include="Interfaces\ISesionRepository.cs" />
+    <Compile Include="Interfaces\IVentaRepository.cs" />
     <Compile Include="Repository\SesionRepository.cs" />
     <Compile Include="Repository\VentaRepository.cs" />
     <Compile Include="SalasDB.cs" />
-    <Compile Include="Service\ISesionService.cs" />
-    <Compile Include="Service\IVentaService.cs" />
+    <Compile Include="Interfaces\ISesionService.cs" />
+    <Compile Include="Interfaces\IVentaService.cs" />
+    <Compile Include="SesionExcepcion.cs" />
     <Compile Include="Service\SesionService.cs" />
     <Compile Include="Service\VentaService.cs" />
     <Compile Include="Sesion.cs" />
     <Compile Include="Venta.cs" />
-    <Compile Include="Controller\IVentaController.cs" />
+    <Compile Include="Interfaces\IVentaController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VentaException.cs" />
   </ItemGroup>

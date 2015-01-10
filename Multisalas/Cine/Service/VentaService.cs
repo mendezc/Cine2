@@ -1,30 +1,18 @@
-﻿using Cine.Repository;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cine.Repository;
 
 namespace Cine.Service
 {
     public class VentaService : IVentaService
     {
-        private int[] BUTACAS = new int[3] { 100, 50, 20 };
-        private const double PRECIO = 7d;
-        private const double DESCUENTO = 0.9d;
-        private const int UMBRAL_DESCUENTO = 5;
-        public IVentaRepository Repositorio
-        {
-            get;
-            set;
-        }
-
-        public ISesionRepository SesionRepositorio
-        {
-            get;
-            set;
-        }
+       
+        public IVentaRepository Repositorio { get; set; }
+        public ISesionRepository SesionRepositorio { get; set; }
 
         public VentaService(IVentaRepository ventaRepository, ISesionRepository sesionRepositorio)
         {
@@ -35,18 +23,19 @@ namespace Cine.Service
 
         public Venta Create(Venta venta)
         {
-            if (Repositorio.SesionValida(venta.Sesion.SesionId) && QuedanEntradas(venta.Sesion.SesionId, venta.numEntradas))
+            if (!SesionRepositorio.SesionValidaYAbierta(venta.Sesion.SesionId))
             {
-                double precio = PrecioEntradas(venta.numEntradas);
-                venta.Precio = precio;
-                Repositorio.Create(venta);
-                return venta;
+                Trace.WriteLine("Imposible vender entradas, la sesión no existe o está cerrada.");
+                throw new SesionException();
             }
-            else
+            if(!QuedanEntradas(venta.Sesion.SesionId, venta.numEntradas))
             {
-                Trace.WriteLine("Imposible vender entradas, no quedan entradas o la sesion no existe o esta cerrada");
-                throw new VentaException("No quedan entradas en la sala o la sesion no existe o esta cerrada");
+                Trace.WriteLine("Imposible vender entradas, no quedan entradas");
+                throw new VentaException("No quedan entradas en la sala");
             }
+            venta = PrecioEntradas(venta);
+            Repositorio.Create(venta);
+            return venta;
         }
 
         public Venta Read(long id)
@@ -61,9 +50,9 @@ namespace Cine.Service
 
         public Venta Update(Venta venta)
         {
-            if (!Repositorio.SesionValida(venta.Sesion.SesionId))
+            if (!SesionRepositorio.SesionValidaYAbierta(venta.Sesion.SesionId))
             {
-                throw new VentaException("La sesión de la venta que intentó actualizar no existe o está cerrada.");
+                throw new SesionException();
             }
             Venta antigua = Repositorio.Read(venta.VentaId);
             bool haySuficientesEntradas = false;
@@ -84,28 +73,34 @@ namespace Cine.Service
                 Trace.WriteLine("Imposible cambiar entradas, no hay suficiente aforo para la sesión seleccionada.");
                 throw new VentaException("No hay suficiente aforo para realizar el cambio en la venta");
             }
-            venta.Precio = PrecioEntradas(venta.numEntradas);
-            Trace.WriteLine("El dinero correspondiente a la venta es: " + venta.Precio);
+            venta = PrecioEntradas(venta, antigua);
+            Trace.WriteLine("El dinero correspondiente a la venta es: " + venta.Total);
             return Repositorio.Update(venta);
         }
 
         public Venta Delete(long id)
         {
-            var venta = Repositorio.Delete(id);
-            double precio = PrecioEntradas(venta.numEntradas);
+            Venta venta = Repositorio.Read(id);
+            if (venta == null)
+            {
+                Trace.WriteLine("Imposible borrar una venta inexistente.");
+                throw new VentaException("La venta que intentó borrar no existe.");
+            }
+            if (!SesionRepositorio.SesionValidaYAbierta(venta.Sesion.SesionId))
+            {
+                Trace.WriteLine("Imposible borrar la venta porque la sesión correspondiente está cerrada.");
+                throw new SesionException();
+            }
+            venta = Repositorio.Delete(id);
+            double precio = PrecioEntradas(venta).Total;
             Trace.WriteLine("El dinero correspondiente a la venta es: " + precio);
             return venta;
-        }
-
-        public double Calcular()
-        {
-            return Repositorio.List().Sum(v => PrecioEntradas(v.numEntradas));
         }
 
         public bool QuedanEntradas(int sesionId, int numEntradas, int antiguasEntradas = 0)
         {
             Sesion sesion = SesionRepositorio.Read(sesionId);
-            int numeroEntradasConLasSolicitadas = Repositorio.ButacasVendidas(sesionId) - antiguasEntradas;
+            int numeroEntradasConLasSolicitadas = Repositorio.ButacasVendidasSesion(sesionId) - antiguasEntradas;
             numeroEntradasConLasSolicitadas += numEntradas;
             bool resultado = numeroEntradasConLasSolicitadas <= NumeroEntradas(sesion.SalaId);
             return resultado;
@@ -113,55 +108,52 @@ namespace Cine.Service
 
         private int NumeroEntradas(int salaId)
         {
-            return BUTACAS[(salaId - 1)];
+            return Constantes.BUTACAS[(salaId - 1)];
         }
 
-        public double PrecioEntradas(int numeroEntradas)
+        public Venta PrecioEntradas(Venta venta, Venta ventaAnterior = null)
         {
-            var precio = (numeroEntradas * PRECIO);
-            if (numeroEntradas >= UMBRAL_DESCUENTO)
+            venta.Total = (venta.numEntradas * Constantes.PRECIO);
+            if (venta.numEntradas >= Constantes.UMBRAL_DESCUENTO)
             {
                 Trace.WriteLine("Descuento del 10%");
-                precio *= DESCUENTO;
+                venta.Total *= Constantes.DESCUENTO;
             }
-            return precio;
+            if (ventaAnterior != null)
+            {
+                venta.Diferencia = venta.Total - ventaAnterior.Total;
+            }
+            return venta;
         }
 
-        public int TotalEntradas(Venta venta)
+        public int ButacasVendidasSesion(long idSesion)
         {
-            return Repositorio.List().Sum(total => total.numEntradas);
+            return Repositorio.ButacasVendidasSesion(idSesion);
         }
 
-        public double TotalDineroSala(int idSala)
+        public int ButacasVendidasSala(int idSala)
         {
-            var ventaSala = Repositorio.EntradasVendidasSala(idSala);
-            return ventaSala.Sum(v => PrecioEntradas(v.numEntradas));
+            return Repositorio.ButacasVendidasSala(idSala);
         }
 
-        public int EntradasVendidasTotalSala(int idSala)
+        public int ButacasVendidas()
         {
-            return Repositorio.EntradasVendidasTotalSala(idSala);
+            return Repositorio.ButacasVendidas();
         }
 
-        public double TotalDineroSesion(int idSesion)
+        public double TotalPrecioSesion(long idSesion)
         {
-            var ventaSala = Repositorio.EntradasVendidasSala(idSesion);
-            return ventaSala.Sum(v => PrecioEntradas(v.numEntradas));
+            return Repositorio.TotalPrecioSesion(idSesion);
         }
 
-        public int EntradasVendidasTotalSesion(int idSesion)
+        public double TotalPrecioSala(int idSala)
         {
-            return Repositorio.EntradasVendidasTotalSesion(idSesion);
+            return Repositorio.TotalPrecioSala(idSala);
         }
 
-        public bool SesionValida(Sesion ses)
+        public double TotalPrecio()
         {
-            return Repositorio.SesionValida(ses.SesionId);
-        }
-
-        public Sesion BuscaSesion(int sesionID)
-        {
-            return Repositorio.BuscaSesion(sesionID);
+            return Repositorio.TotalPrecio();
         }
     }
 }

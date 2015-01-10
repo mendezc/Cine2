@@ -16,7 +16,7 @@ namespace Cine
             this.SesionId = id;
             this.SalaId = idSala;
             this.Hora = hora;
-            Cerrado = true;
+            EstaCerrada = true;
         }
 
         public Sesion(int id, int idSala, double hora, Boolean cerrado)
@@ -24,31 +24,12 @@ namespace Cine
             this.SesionId = id;
             this.SalaId = idSala;
             this.Hora = hora;
-            this.Cerrado = cerrado;
+            this.EstaCerrada = cerrado;
         }
 
-        public int SesionId //idSesion
-        {
-            get;
-            set;
-        }
-
-        public int SalaId
-        {
-            get;
-            set;
-        }
-
-        public bool Cerrado
-        {
-            get;
-            set;
-        }
-
-        public double Hora
-        {
-            get;
-            set;
-        }
+        public int SesionId { get; set; }
+        public int SalaId { get; set; }
+        public bool EstaCerrada { get; set; }
+        public double Hora { get; set; }
     }    
 }

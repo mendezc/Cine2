@@ -1,6 +1,7 @@
 ﻿using Cine.Service;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,15 +16,24 @@ namespace Cine.Controller
         {
             SesionServicio = sesionService;
         }
-
-        public Sesion Cerrar(long id)
+        public bool EstaAbierta(long id)
         {
-            return SesionServicio.Cerrar(id);
+            Sesion sesion = SesionServicio.Read(id);
+            if (sesion == null)
+            {
+                Trace.WriteLine("SesionController: .IsOpen() Se intento comprobar si la sesión {0} estaba abierta pero no existe.");
+                throw new Exception("La sesión no existe");
+            }
+            return !sesion.EstaCerrada;
+        }
+        public void Cerrar(long id)
+        {
+            SesionServicio.Cerrar(id);
         }
 
-        public Sesion Abrir(long id)
+        public void Abrir(long id)
         {
-            return SesionServicio.Abrir(id);
+            SesionServicio.Abrir(id);
         }
     }
 }

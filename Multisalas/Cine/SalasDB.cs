@@ -11,6 +11,9 @@ namespace Cine
     {
         public static IDatabaseInitializer<SalasDB> Initializer { get; set; }
 
+        public DbSet<Venta> Ventas { get; set; }
+        public DbSet<Sesion> Sesiones { get; set; }
+
         public SalasDB()
         {
             if (Initializer != null)
@@ -18,9 +21,5 @@ namespace Cine
                 Database.SetInitializer<SalasDB>(Initializer);
             }
         }
-
-
-        public DbSet<Venta> Ventas { get; set; }
-        public DbSet<Sesion> Sesiones { get; set; }
     }
 }
