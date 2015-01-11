@@ -27,9 +27,8 @@ namespace CineTest
         {
             using (var context = new SalasDB())
             {
-                context.Database.SqlQuery<Venta>("DELETE from Ventas");
+                context.Database.ExecuteSqlCommand("DELETE FROM Ventas");
                 context.SaveChanges();
-                context.Dispose();
             }
         }
 
