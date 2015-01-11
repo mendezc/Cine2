@@ -15,7 +15,6 @@ namespace CineTest
     public class VentaRepositoryTest
     {
         private VentaRepository sut;
-        private DbContextTransaction transaction;
 
         [TestInitialize]
         public void TestInicializa()

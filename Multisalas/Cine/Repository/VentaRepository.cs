@@ -135,8 +135,8 @@ namespace Cine.Repository
         {
             using (var context = new SalasDB())
             {
-                int resultado = context.Database
-                    .SqlQuery<int>("select sum(Ventas.Total) as total from Ventas where SesionId = @p0 group by SesionId ", new SqlParameter("p0", idSesion))
+                double resultado = context.Database
+                    .SqlQuery<double>("select sum(Ventas.Total) as total from Ventas where SesionId = @p0 group by SesionId ", new SqlParameter("p0", idSesion))
                     .FirstOrDefault();
                 return resultado;
             }
@@ -144,26 +144,26 @@ namespace Cine.Repository
 
         public double TotalPrecioSala(int idSala)
         {
-            int resultado = 0;
             using (var context = new SalasDB())
             {
+                double resultado = 0;
                 resultado = context.Database
-                    .SqlQuery<int>("select sum(Ventas.Total) as total from Ventas, Sesions where Ventas.SesionId=Sesions.SesionId and Sesions.SalaId = @p0 group by Sesions.SalaId ", new SqlParameter("p0", idSala))
+                    .SqlQuery<double>("select sum(Ventas.Total) as total from Ventas, Sesions where Ventas.SesionId=Sesions.SesionId and Sesions.SalaId = @p0 group by Sesions.SalaId ", new SqlParameter("p0", idSala))
                     .FirstOrDefault();
+                return resultado;
             }
-            return resultado;
         }
 
         public double TotalPrecio()
         {
-            int resultado = 0;
             using (var context = new SalasDB())
             {
+                double resultado = 0;
                 resultado = context.Database
-                    .SqlQuery<int>("select sum(Ventas.Total) as total from Ventas")
+                    .SqlQuery<double>("select sum(Ventas.Total) as total from Ventas")
                     .FirstOrDefault();
+                return resultado;
             }
-            return resultado;
         }
     }
 }

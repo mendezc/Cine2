@@ -188,13 +188,53 @@ namespace CineTest
         [TestMethod]
         public void TestTotalizarEntradas()
         {
-
+            _sesion = new Sesion(7, 1, 20.0d);
+            _controladorSesion.Abrir(7);
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _sesion = new Sesion(4, 1, 17.0d);
+            _controladorSesion.Abrir(4);
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _sesion = new Sesion(2, 2, 20.0d);
+            _controladorSesion.Abrir(2);
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            int totalEntradas = _controlador.ButacasVendidas();
+            Assert.AreEqual(90, totalEntradas);
+            int totalEntradasSala = _controlador.ButacasVendidasSala(1);
+            Assert.AreEqual(60, totalEntradasSala);
+            int totalEntradasSesion = _controlador.ButacasVendidasSesion(7);
+            Assert.AreEqual(30, totalEntradasSesion);
         }
 
         [TestMethod]
         public void TestTotalizarVentas()
         {
-
+            _sesion = new Sesion(7, 1, 20.0d);
+            _controladorSesion.Abrir(7);
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _sesion = new Sesion(4, 1, 17.0d);
+            _controladorSesion.Abrir(4);
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _sesion = new Sesion(2, 2, 20.0d);
+            _controladorSesion.Abrir(2);
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            _controlador.Create(new Venta(_sesion, 10));
+            double totalTotales = _controlador.TotalPrecio();
+            Assert.AreEqual(567.0d, totalTotales, 0.0001d);
+            double totalTotalesSala = _controlador.TotalPrecioSala(1);
+            Assert.AreEqual(378.0d, totalTotalesSala, 0.0001d);
+            double totalTotalesSesion = _controlador.TotalPrecioSesion(7);
+            Assert.AreEqual(189.0d, totalTotalesSesion, 0.0001d);
         }
    }
 }

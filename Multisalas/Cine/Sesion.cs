@@ -8,6 +8,12 @@ namespace Cine
 {
     public class Sesion
     {
+
+        public long SesionId { get; set; }
+        public int SalaId { get; set; }
+        public bool EstaCerrada { get; set; }
+        public double Hora { get; set; }
+
         public Sesion()
         { }
 
@@ -19,17 +25,12 @@ namespace Cine
             EstaCerrada = true;
         }
 
-        public Sesion(long id, int idSala, double hora, Boolean cerrado)
+        public Sesion(long id, int idSala, double hora, bool cerrado)
         {
             this.SesionId = id;
             this.SalaId = idSala;
             this.Hora = hora;
             this.EstaCerrada = cerrado;
         }
-
-        public long SesionId { get; set; }
-        public int SalaId { get; set; }
-        public bool EstaCerrada { get; set; }
-        public double Hora { get; set; }
     }    
 }
