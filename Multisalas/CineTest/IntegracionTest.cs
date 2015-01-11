@@ -78,6 +78,7 @@ namespace CineTest
             _venta = new Venta(_sesion, 49);
             _venta = _controlador.Create(_venta);
             Assert.AreEqual(308.70d, _venta.Total, 0.0001d);
+            _controladorSesion.Cerrar(1);
         }
 
         [TestMethod]

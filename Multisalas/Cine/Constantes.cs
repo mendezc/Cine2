@@ -14,7 +14,6 @@ namespace Cine
         public static int[] BUTACAS = new int[3] { 100, 50, 20 };
         public static long[] SESIONES = new long[9] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         public static long[] SALAS = new long[3] { 1, 2, 3 };
-
         public const long SESIONNOEXISTE = 10;
         public const long SALANOEXISTE = 4;
     }

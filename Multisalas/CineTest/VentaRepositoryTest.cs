@@ -95,10 +95,74 @@ namespace CineTest
         }
 
         [TestMethod]
+        public void TestDeletedAlreadyDeleted()
+        {
+            Venta cr = sut.Create(new Venta { Sesion = new Sesion(1, 1, 20.0d), SesionId = 1, NumeroEntradas = 20 });
+            Venta ventaBorrada = sut.Delete(cr.VentaId);
+            Venta segundoIntento = sut.Delete(cr.VentaId);
+            Assert.IsNull(segundoIntento);
+        }
+        [TestMethod]
         public void TestDeleteNoExisteVenta()
         {
             Venta venta = sut.Delete(999);
             Assert.IsNull(venta);
+        }
+        [TestMethod]
+        public void TestButacasVendidas()
+        {
+            Venta cr = sut.Create(new Venta { Sesion = new Sesion(1, 1, 20.0d), SesionId = 1, NumeroEntradas = 20 });
+            cr = sut.Create(new Venta { Sesion = new Sesion(4, 1, 20.0d), SesionId = 4, NumeroEntradas = 20 });
+            cr = sut.Create(new Venta { Sesion = new Sesion(2, 2, 20.0d), SesionId = 2, NumeroEntradas = 20 });
+            int butacas = sut.ButacasVendidas();
+            Assert.AreEqual(60, butacas);
+        }
+        [TestMethod]
+        public void TestButacasVendidasSesion()
+        {
+            Venta cr = sut.Create(new Venta { Sesion = new Sesion(1, 1, 20.0d), SesionId = 1, NumeroEntradas = 20 });
+            cr = sut.Create(new Venta { Sesion = new Sesion(4, 1, 20.0d), SesionId = 4, NumeroEntradas = 20 });
+            cr = sut.Create(new Venta { Sesion = new Sesion(2, 2, 20.0d), SesionId = 2, NumeroEntradas = 20 });
+            int butacas = sut.ButacasVendidasSesion(1);
+            Assert.AreEqual(20, butacas);
+        }
+
+        [TestMethod]
+        public void TestButacasVendidasSala()
+        {
+            Venta cr = sut.Create(new Venta { Sesion = new Sesion(1, 1, 20.0d), SesionId = 1, NumeroEntradas = 20 });
+            cr = sut.Create(new Venta { Sesion = new Sesion(4, 1, 20.0d), SesionId = 4, NumeroEntradas = 20 });
+            cr = sut.Create(new Venta { Sesion = new Sesion(2, 2, 20.0d), SesionId = 2, NumeroEntradas = 20 });
+            int butacas = sut.ButacasVendidasSala(1);
+            Assert.AreEqual(40, butacas);
+        }
+        [TestMethod]
+        public void TestTotalPrecio()
+        {
+            Venta cr = sut.Create(new Venta { Sesion = new Sesion(1, 1, 20.0d), SesionId = 1, NumeroEntradas = 20, Total = 126.0d });
+            cr = sut.Create(new Venta { Sesion = new Sesion(4, 1, 20.0d), SesionId = 4, NumeroEntradas = 20, Total = 126.0d });
+            cr = sut.Create(new Venta { Sesion = new Sesion(2, 2, 20.0d), SesionId = 2, NumeroEntradas = 20, Total = 126.0d });
+            double total = sut.TotalPrecio();
+            Assert.AreEqual(378.0d, total);
+        }
+        [TestMethod]
+        public void TestTotalPrecioSesion()
+        {
+            Venta cr = sut.Create(new Venta { Sesion = new Sesion(1, 1, 20.0d), SesionId = 1, NumeroEntradas = 20, Total = 126.0d });
+            cr = sut.Create(new Venta { Sesion = new Sesion(4, 1, 20.0d), SesionId = 4, NumeroEntradas = 20, Total = 126.0d });
+            cr = sut.Create(new Venta { Sesion = new Sesion(2, 2, 20.0d), SesionId = 2, NumeroEntradas = 20, Total = 126.0d });
+            double total = sut.TotalPrecioSesion(1);
+            Assert.AreEqual(126.0d, total);
+        }
+
+        [TestMethod]
+        public void TestTotalPrecioSala()
+        {
+            Venta cr = sut.Create(new Venta { Sesion = new Sesion(1, 1, 20.0d), SesionId = 1, NumeroEntradas = 20, Total = 126.0d });
+            cr = sut.Create(new Venta { Sesion = new Sesion(4, 1, 20.0d), SesionId = 4, NumeroEntradas = 20, Total = 126.0d });
+            cr = sut.Create(new Venta { Sesion = new Sesion(2, 2, 20.0d), SesionId = 2, NumeroEntradas = 20, Total = 126.0d });
+            double total = sut.TotalPrecioSala(1);
+            Assert.AreEqual(252.0d, total);
         }
     }
 }
