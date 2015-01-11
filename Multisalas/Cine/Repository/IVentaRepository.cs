@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cine
+namespace Cine.Repository
 {
     public interface IVentaRepository
     {
@@ -13,12 +13,12 @@ namespace Cine
         IList<Venta> List();
         Venta Update(Venta venta);
         Venta Delete(long id);
-        int ButacasVendidas(long idSesion);
-        IList<Venta> EntradasVendidasSala(int idSala);
-        int EntradasVendidasTotalSala(int idSala);
-        IList<Venta> EntradasVendidasSesion(int idSesion);
-        int EntradasVendidasTotalSesion(int idSesion);
-        bool SesionValida(int sesionId);
-        Sesion BuscaSesion(int sesionID);
+        int ButacasVendidasSesion(long idSesion);
+        int ButacasVendidasSala(int idSala);
+        int ButacasVendidas();
+        double TotalPrecioSesion(long idSesion);
+        double TotalPrecioSala(int idSala);
+        double TotalPrecio();
+        
     }
 }

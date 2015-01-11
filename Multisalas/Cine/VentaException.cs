@@ -10,7 +10,6 @@ namespace Cine
         public VentaException(string message)
             : base(message)
         {
-
         }
     }
 }

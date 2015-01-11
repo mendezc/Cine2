@@ -3,7 +3,9 @@ namespace Cine.Service
 {
     public interface ISesionService
     {
-        Cine.Sesion Abrir(long id);
-        Cine.Sesion Cerrar(long id);
+        Sesion Read(long id);
+        Sesion Abrir(long id);
+        Sesion Cerrar(long id);
+        bool SesionValidaYAbierta(long sesionId);
     }
 }

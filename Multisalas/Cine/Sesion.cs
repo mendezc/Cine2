@@ -11,7 +11,7 @@ namespace Cine
         public Sesion()
         { }
 
-        public Sesion(int id, int idSala, double hora)
+        public Sesion(long id, int idSala, double hora)
         {
             this.SesionId = id;
             this.SalaId = idSala;
@@ -19,7 +19,7 @@ namespace Cine
             EstaCerrada = true;
         }
 
-        public Sesion(int id, int idSala, double hora, Boolean cerrado)
+        public Sesion(long id, int idSala, double hora, Boolean cerrado)
         {
             this.SesionId = id;
             this.SalaId = idSala;
@@ -27,7 +27,7 @@ namespace Cine
             this.EstaCerrada = cerrado;
         }
 
-        public int SesionId { get; set; }
+        public long SesionId { get; set; }
         public int SalaId { get; set; }
         public bool EstaCerrada { get; set; }
         public double Hora { get; set; }

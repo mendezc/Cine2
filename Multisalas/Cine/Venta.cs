@@ -9,7 +9,7 @@ namespace Cine
     public class Venta
     {
         public long VentaId { get; set; }
-        public int numEntradas { get; set; }
+        public int NumeroEntradas { get; set; }
         public long SesionId { get; set; }
         public Sesion Sesion { get; set; }
         public double DescuentoAplicado { get; set; }
@@ -22,7 +22,7 @@ namespace Cine
         }
         public Venta(Sesion sesion, int numentradas)
         {
-            this.numEntradas = numentradas;
+            this.NumeroEntradas = numentradas;
             this.Sesion = sesion;
             this.Devolucion = false;
 

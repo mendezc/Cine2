@@ -10,5 +10,6 @@ namespace Cine.Repository
     {
         Sesion Read(long id);
         Sesion Update(long id, bool cerrada);
+        bool SesionValidaYAbierta(long sesionId);
     }
 }

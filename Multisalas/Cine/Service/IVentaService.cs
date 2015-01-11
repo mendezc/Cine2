@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cine
+namespace Cine.Service
 {
     public interface IVentaService
     {
@@ -13,15 +13,13 @@ namespace Cine
         IList<Venta> List();
         Venta Update(Venta venta);
         Venta Delete(long id);
-        double Calcular();
-        bool QuedanEntradas(int sesionId, int numEntradas, int antiguasEntradas);
-        double PrecioEntradas(int numeroEntradas);
-        int TotalEntradas(Venta venta);
-        double TotalDineroSala(int idSala);
-        double TotalDineroSesion(int idSesion);
-        int EntradasVendidasTotalSala(int idSala);
-        int EntradasVendidasTotalSesion(int idSesion);
-        bool SesionValida(Sesion ses);
-        Sesion BuscaSesion(int sesionID);
+        bool QuedanEntradas(long sesionId, int numEntradas, int antiguasEntradas = 0);
+        Venta PrecioEntradas(Venta venta, Venta antiguaVenta);
+        int ButacasVendidasSesion(long idSesion);
+        int ButacasVendidasSala(int idSala);
+        int ButacasVendidas();
+        double TotalPrecioSesion(long idSesion);
+        double TotalPrecioSala(int idSala);
+        double TotalPrecio();
     }
 }

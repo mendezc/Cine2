@@ -3,7 +3,8 @@ namespace Cine.Controller
 {
     public interface ISesionController
     {
-        Cine.Sesion Abrir(long id);
-        Cine.Sesion Cerrar(long id);
+        void Abrir(long id);
+        void Cerrar(long id);
+        bool EstaAbierta(long id);
     }
 }

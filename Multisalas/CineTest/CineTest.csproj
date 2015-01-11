@@ -71,9 +71,9 @@
   <ItemGroup>
     <Compile Include="IntegracionTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="repositoryTest.cs" />
     <Compile Include="SalasDBInitializerDropCreateDatabaseAlways.cs" />
-    <Compile Include="serviceTest.cs" />
+    <Compile Include="SesionRepositoryTest.cs" />
+    <Compile Include="VentaRepositoryTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cine\Cine.csproj">

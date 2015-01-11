@@ -18,7 +18,6 @@ namespace Cine.Repository
         public Venta Create(Venta venta)
         {
             Sesion sesion = null;
-            //listado.Add(venta);
             using (var context = new SalasDB())
             {
                 sesion = context.Sesiones.Find(venta.Sesion.SesionId);
@@ -34,28 +33,19 @@ namespace Cine.Repository
         {
             using (var context = new SalasDB())
             {
-                Venta res = context.Ventas.Include("Sesion").Where(v => v.VentaId == id).FirstOrDefault();
+                Venta res = context.Ventas.Include("Sesion").Where(v => v.Devolucion == false && v.VentaId == id).FirstOrDefault();
                 Trace.WriteLine("Leyendo venta de id" + id);
                 return res;
             }
-            
-            //return listado.Find(v => v.Id == id);
         }
 
         public IList<Venta> List()
         {
-            //List<Venta> res = null;
             using (var context = new SalasDB())
             {
-                
                 Trace.WriteLine("Listando ventas");
                 return context.Ventas.Where(v => v.Devolucion == false).ToList();
-                
-                //return context.Set<Venta>().ToList();
-                //return listado;
             }
-            
-           
         }
 
         public Venta Update(Venta venta)
@@ -67,6 +57,7 @@ namespace Cine.Repository
                 Venta antigua = ctx.Ventas.Find(venta.VentaId);
                 if (antigua != null)
                 {
+                    venta.SesionId = sesion.SesionId;
                     venta.Sesion = sesion;
                     ctx.Entry(antigua).CurrentValues.SetValues(venta);
                     ctx.SaveChanges();
@@ -76,8 +67,8 @@ namespace Cine.Repository
                 {
                     throw new VentaException("La venta que intentó actualizar no existe.");
                 }
-                
-                return antigua ;
+
+                return antigua;
             }
         }
 
@@ -85,28 +76,35 @@ namespace Cine.Repository
         {
             Venta borrado = null;
             using (var context = new SalasDB())
-            { 
+            {
                 borrado = context.Ventas.Find(id);
-                if (borrado != null && borrado.Devolucion == false)
+                if (borrado != null)
                 {
-                    borrado.Devolucion = true;
-                    context.SaveChanges();
+                    if (borrado.Devolucion == false)
+                    {
+                        borrado.Devolucion = true;
+                        context.SaveChanges();
+                    }
+                    else
+                    {
+                        borrado = null;
+                    }
                 }
             }
             return borrado;
         }
-
-        public int ButacasVendidasSesion(long idSesion){
-            using(var context = new SalasDB())
+        public int ButacasVendidasSesion(long idSesion)
+        {
+            using (var context = new SalasDB())
             {
                 int resultado = context.Database
-                    .SqlQuery<int>("select sum(numEntradas) as total from Ventas where Sesion_SesionId = @p0 group by Sesion_SesionId ", new SqlParameter("p0", idSesion))
+                    .SqlQuery<int>("select sum(Ventas.NumeroEntradas) as total from Ventas where SesionId = @p0 group by SesionId", new SqlParameter("p0", idSesion))
                     .FirstOrDefault();
                 return resultado;
             }
         }
 
-       
+
 
         public int ButacasVendidasSala(int idSala)
         {
@@ -114,7 +112,7 @@ namespace Cine.Repository
             using (var context = new SalasDB())
             {
                 resultado = context.Database
-                    .SqlQuery<int>("select sum(Ventas.numEntradas) as total from Ventas, Sesions where Ventas.Sesion_SesionId=Sesions.SesionId and Sesions.SalaId = @p0 group by Sesions.SalaId ", new SqlParameter("p0", idSala))
+                    .SqlQuery<int>("select sum(Ventas.NumeroEntradas) as total from Ventas, Sesions where Ventas.SesionId=Sesions.SesionId and Sesions.SalaId = @p0 group by Sesions.SalaId ", new SqlParameter("p0", idSala))
                     .FirstOrDefault();
             }
             return resultado;
@@ -126,19 +124,19 @@ namespace Cine.Repository
             using (var context = new SalasDB())
             {
                 resultado = context.Database
-                    .SqlQuery<int>("select sum(Ventas.numEntradas) as total from Ventas")
+                    .SqlQuery<int>("select sum(Ventas.NumeroEntradas) as total from Ventas")
                     .FirstOrDefault();
             }
             return resultado;
         }
-        
+
 
         public double TotalPrecioSesion(long idSesion)
         {
             using (var context = new SalasDB())
             {
                 int resultado = context.Database
-                    .SqlQuery<int>("select sum(Precio) as total from Ventas where Sesion_SesionId = @p0 group by Sesion_SesionId ", new SqlParameter("p0", idSesion))
+                    .SqlQuery<int>("select sum(Ventas.Total) as total from Ventas where SesionId = @p0 group by SesionId ", new SqlParameter("p0", idSesion))
                     .FirstOrDefault();
                 return resultado;
             }
@@ -150,7 +148,7 @@ namespace Cine.Repository
             using (var context = new SalasDB())
             {
                 resultado = context.Database
-                    .SqlQuery<int>("select sum(Ventas.Precio) as total from Ventas, Sesions where Ventas.Sesion_SesionId=Sesions.SesionId and Sesions.SalaId = @p0 group by Sesions.SalaId ", new SqlParameter("p0", idSala))
+                    .SqlQuery<int>("select sum(Ventas.Total) as total from Ventas, Sesions where Ventas.SesionId=Sesions.SesionId and Sesions.SalaId = @p0 group by Sesions.SalaId ", new SqlParameter("p0", idSala))
                     .FirstOrDefault();
             }
             return resultado;
@@ -162,7 +160,7 @@ namespace Cine.Repository
             using (var context = new SalasDB())
             {
                 resultado = context.Database
-                    .SqlQuery<int>("select sum(Precio) as total from Ventas")
+                    .SqlQuery<int>("select sum(Ventas.Total) as total from Ventas")
                     .FirstOrDefault();
             }
             return resultado;

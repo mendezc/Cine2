@@ -25,6 +25,10 @@ namespace Cine.Repository
             using (var context = new SalasDB())
             {
                 sesion = context.Sesiones.Find(id);
+                if (sesion == null)
+                {
+                    throw new SesionException();
+                }
                 sesion.EstaCerrada = cerrada;
                 context.SaveChanges();
             }

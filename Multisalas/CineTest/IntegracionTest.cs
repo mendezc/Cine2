@@ -25,12 +25,12 @@ namespace CineTest
 
             container = new UnityContainer();
 
-            container.RegisterType(typeof(IVentaRepository), typeof(VentaRepository));
-            container.RegisterType(typeof(ISesionRepository), typeof(SesionRepository));
-            container.RegisterType(typeof(IVentaService), typeof(VentaService));
-            container.RegisterType(typeof(ISesionService), typeof(SesionService));
-            container.RegisterType(typeof(IVentaController), typeof(VentaController));
-            container.RegisterType(typeof(ISesionController), typeof(SesionController));
+            container.RegisterType<IVentaRepository,VentaRepository>();
+            container.RegisterType<ISesionRepository, SesionRepository>();
+            container.RegisterType<IVentaService, VentaService>();
+            container.RegisterType<ISesionService, SesionService>();
+            container.RegisterType<IVentaController, VentaController>();
+            container.RegisterType<ISesionController, SesionController>();
 
             SalasDB.Initializer = new SalasDBInitializerDropCreateDatabaseAlways();
 
@@ -41,10 +41,11 @@ namespace CineTest
         [TestCleanup]
         public void CleanUp()
         {
-            using (var ctx = new SalasDB())
+            using (var context = new SalasDB())
             {
-                ctx.Database.SqlQuery<Venta>("DELETE FROM Ventas");
-                ctx.SaveChanges();
+                context.Database.SqlQuery<Venta>("DELETE from Ventas");
+                context.SaveChanges();
+                context.Dispose();
             }
         }
 
@@ -125,7 +126,7 @@ namespace CineTest
             _venta = new Venta(_sesion, 50);
             Venta dbVenta = _controlador.Create(_venta);
             Sesion sesion2 = new Sesion(4, 2, 17);
-            dbVenta.numEntradas = 2;
+            dbVenta.NumeroEntradas = 2;
             dbVenta.VentaId = 9999;
             _controlador.Update(dbVenta);
         }
@@ -138,7 +139,7 @@ namespace CineTest
             _venta = new Venta(_sesion, 10);
             _controlador.Create(_venta);
             _controladorSesion.Cerrar(6);
-            _venta.numEntradas = 20;
+            _venta.NumeroEntradas = 20;
             _controlador.Update(_venta);
         }
 
@@ -150,7 +151,7 @@ namespace CineTest
             _controladorSesion.Abrir(6);
             _venta = new Venta(_sesion, 20);
             Venta venta = _controlador.Create(_venta);
-            venta.numEntradas = 21;
+            venta.NumeroEntradas = 21;
             _controlador.Update(_venta);
         }
 

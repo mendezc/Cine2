@@ -10,25 +10,24 @@ namespace Cine.Service
 {
     public class VentaService : IVentaService
     {
-       
         public IVentaRepository Repositorio { get; set; }
-        public ISesionRepository SesionRepositorio { get; set; }
+        public ISesionService SesionService { get; set; }
 
-        public VentaService(IVentaRepository ventaRepository, ISesionRepository sesionRepositorio)
+        public VentaService(IVentaRepository ventaRepository, ISesionService sesionService)
         {
             this.Repositorio = ventaRepository;
-            this.SesionRepositorio = sesionRepositorio;
+            this.SesionService = sesionService;
         }
 
 
         public Venta Create(Venta venta)
         {
-            if (!SesionRepositorio.SesionValidaYAbierta(venta.Sesion.SesionId))
+            if (!SesionService.SesionValidaYAbierta(venta.Sesion.SesionId))
             {
                 Trace.WriteLine("Imposible vender entradas, la sesión no existe o está cerrada.");
                 throw new SesionException();
             }
-            if(!QuedanEntradas(venta.Sesion.SesionId, venta.numEntradas))
+            if(!QuedanEntradas(venta.Sesion.SesionId, venta.NumeroEntradas))
             {
                 Trace.WriteLine("Imposible vender entradas, no quedan entradas");
                 throw new VentaException("No quedan entradas en la sala");
@@ -50,7 +49,7 @@ namespace Cine.Service
 
         public Venta Update(Venta venta)
         {
-            if (!SesionRepositorio.SesionValidaYAbierta(venta.Sesion.SesionId))
+            if (!SesionService.SesionValidaYAbierta(venta.Sesion.SesionId))
             {
                 throw new SesionException();
             }
@@ -62,11 +61,11 @@ namespace Cine.Service
             }
             if (antigua.Sesion.SesionId == venta.Sesion.SesionId)
             {
-                haySuficientesEntradas = QuedanEntradas(venta.Sesion.SesionId, venta.numEntradas, antigua.numEntradas);
+                haySuficientesEntradas = QuedanEntradas(venta.Sesion.SesionId, venta.NumeroEntradas, antigua.NumeroEntradas);
             }
             else
             {
-                haySuficientesEntradas = QuedanEntradas(venta.Sesion.SesionId, venta.numEntradas);
+                haySuficientesEntradas = QuedanEntradas(venta.Sesion.SesionId, venta.NumeroEntradas);
             }
             if (!haySuficientesEntradas)
             {
@@ -86,7 +85,7 @@ namespace Cine.Service
                 Trace.WriteLine("Imposible borrar una venta inexistente.");
                 throw new VentaException("La venta que intentó borrar no existe.");
             }
-            if (!SesionRepositorio.SesionValidaYAbierta(venta.Sesion.SesionId))
+            if (!SesionService.SesionValidaYAbierta(venta.Sesion.SesionId))
             {
                 Trace.WriteLine("Imposible borrar la venta porque la sesión correspondiente está cerrada.");
                 throw new SesionException();
@@ -97,9 +96,9 @@ namespace Cine.Service
             return venta;
         }
 
-        public bool QuedanEntradas(int sesionId, int numEntradas, int antiguasEntradas = 0)
+        public bool QuedanEntradas(long sesionId, int numEntradas, int antiguasEntradas = 0)
         {
-            Sesion sesion = SesionRepositorio.Read(sesionId);
+            Sesion sesion = SesionService.Read(sesionId);
             int numeroEntradasConLasSolicitadas = Repositorio.ButacasVendidasSesion(sesionId) - antiguasEntradas;
             numeroEntradasConLasSolicitadas += numEntradas;
             bool resultado = numeroEntradasConLasSolicitadas <= NumeroEntradas(sesion.SalaId);
@@ -113,8 +112,8 @@ namespace Cine.Service
 
         public Venta PrecioEntradas(Venta venta, Venta ventaAnterior = null)
         {
-            venta.Total = (venta.numEntradas * Constantes.PRECIO);
-            if (venta.numEntradas >= Constantes.UMBRAL_DESCUENTO)
+            venta.Total = (venta.NumeroEntradas * Constantes.PRECIO);
+            if (venta.NumeroEntradas >= Constantes.UMBRAL_DESCUENTO)
             {
                 Trace.WriteLine("Descuento del 10%");
                 venta.Total *= Constantes.DESCUENTO;
